@@ -43,3 +43,11 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Generated APK in root
+/app-debug.apk
+
+# Analysis logs
+/analysis_result.txt
+/flutter_analyze_full.txt
+/flutter_analyze_output.txt

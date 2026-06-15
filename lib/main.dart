@@ -10,6 +10,8 @@ import 'providers/report_provider.dart';
 import 'services/notification_service.dart';
 import 'screens/splash/splash_screen.dart';
 import 'screens/auth/login_screen.dart';
+import 'screens/auth/register_screen.dart';
+import 'screens/auth/forgot_password_screen.dart';
 import 'screens/dashboard/dashboard_screen.dart';
 import 'screens/shake/shake_ready_screen.dart';
 import 'screens/shake/shake_detected_screen.dart';
@@ -66,6 +68,10 @@ class LabSafeApp extends StatelessWidget {
               return _route(const SplashScreen(), settings);
             case '/login':
               return _route(const LoginScreen(), settings);
+            case '/register':
+              return _route(const RegisterScreen(), settings);
+            case '/forgot-password':
+              return _route(const ForgotPasswordScreen(), settings);
             case '/dashboard':
               return _route(const DashboardScreen(), settings);
             case '/shake':

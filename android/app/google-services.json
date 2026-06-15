@@ -2,6 +2,7 @@
   "project_info": {
     "project_number": "101475056084",
     "project_id": "labsafe-bb2e7",
+    "firebase_url": "https://labsafe-bb2e7-default-rtdb.asia-southeast1.firebasedatabase.app",
     "storage_bucket": "labsafe-bb2e7.firebasestorage.app"
   },
   "client": [

@@ -18,15 +18,19 @@ class HistoryScreen extends StatefulWidget {
 class _HistoryScreenState extends State<HistoryScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  final List<String> _tabs = ['Semua', 'Selesai', 'Diproses', 'Ditolak'];
+  late List<String> _tabs;
 
   @override
   void initState() {
     super.initState();
+    final user = context.read<AuthProvider>().user;
+    final bool isStaff = user?.role == 'asisten';
+    _tabs = isStaff
+        ? ['Semua', 'Diterima', 'Ditindak Lanjut']
+        : ['Semua', 'Terkirim', 'Ditindaklanjuti'];
     _tabController = TabController(length: _tabs.length, vsync: this);
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final user = context.read<AuthProvider>().user;
-      final bool isStaff = user?.role == 'asisten' || user?.role == 'admin' || user?.role == 'petugas' || user?.role == 'laboran';
       context.read<ReportProvider>().loadReports(userId: isStaff ? null : user?.id);
     });
   }
@@ -39,11 +43,17 @@ class _HistoryScreenState extends State<HistoryScreen>
 
   List<ReportModel> _filterReports(List<ReportModel> all, String tab) {
     if (tab == 'Semua') return all;
-    return all.where((r) => r.status == tab).toList();
+    if (tab == 'Diterima' || tab == 'Terkirim') {
+      return all.where((r) => r.status == 'Terkirim').toList();
+    }
+    return all.where((r) => r.status == 'Ditindaklanjuti').toList();
   }
 
   @override
   Widget build(BuildContext context) {
+    final user = context.watch<AuthProvider>().user;
+    final bool isStaff = user?.role == 'asisten';
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Riwayat Laporan'),
@@ -72,7 +82,7 @@ class _HistoryScreenState extends State<HistoryScreen>
             controller: _tabController,
             children: _tabs.map((tab) {
               final filtered = _filterReports(report.reports, tab);
-              return _buildReportList(filtered);
+              return _buildReportList(filtered, isStaff);
             }).toList(),
           );
         },
@@ -80,7 +90,7 @@ class _HistoryScreenState extends State<HistoryScreen>
     );
   }
 
-  Widget _buildReportList(List<ReportModel> reports) {
+  Widget _buildReportList(List<ReportModel> reports, bool isStaff) {
     if (reports.isEmpty) {
       return Center(
         child: Column(
@@ -99,13 +109,13 @@ class _HistoryScreenState extends State<HistoryScreen>
     return RefreshIndicator(
       onRefresh: () async {
         final user = context.read<AuthProvider>().user;
-        final bool isStaff = user?.role == 'asisten' || user?.role == 'admin' || user?.role == 'petugas' || user?.role == 'laboran';
+        final bool isStaff = user?.role == 'asisten';
         await context.read<ReportProvider>().loadReports(userId: isStaff ? null : user?.id);
       },
       child: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: reports.length,
-        itemBuilder: (context, i) => _buildReportCard(reports[i]),
+        itemBuilder: (context, i) => _buildReportCard(reports[i], isStaff),
       ),
     );
   }
@@ -163,7 +173,7 @@ class _HistoryScreenState extends State<HistoryScreen>
     );
   }
 
-  Widget _buildReportCard(ReportModel report) {
+  Widget _buildReportCard(ReportModel report, bool isStaff) {
     final statusColor = _getStatusColor(report.status);
 
     return GestureDetector(
@@ -220,7 +230,7 @@ class _HistoryScreenState extends State<HistoryScreen>
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
-                            report.status,
+                            report.displayStatus(isStaff),
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
@@ -256,6 +266,9 @@ class _HistoryScreenState extends State<HistoryScreen>
 
   void _showReportDetail(ReportModel report) {
     final statusColor = _getStatusColor(report.status);
+    final user = context.read<AuthProvider>().user;
+    final bool isStaff = user?.role == 'asisten';
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -295,7 +308,7 @@ class _HistoryScreenState extends State<HistoryScreen>
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(color: statusColor.withOpacity(0.24)),
                   ),
-                  child: Text(report.status,
+                  child: Text(report.displayStatus(isStaff),
                       style: TextStyle(
                           color: statusColor, fontWeight: FontWeight.bold)),
                 ),
@@ -331,7 +344,7 @@ class _HistoryScreenState extends State<HistoryScreen>
                 ),
               ),
             ],
-            if (isStaff && report.status != 'Selesai' && report.status != 'Ditolak') ...[
+            if (isStaff && report.status == 'Terkirim') ...[
               const SizedBox(height: 20),
               ElevatedButton.icon(
                 onPressed: () => _handleReportAction(context, report),
@@ -357,7 +370,7 @@ class _HistoryScreenState extends State<HistoryScreen>
       context: context,
       builder: (dialogCtx) => AlertDialog(
         title: const Text('Tindak Lanjuti Laporan'),
-        content: const Text('Pilih tindakan untuk status laporan ini:'),
+        content: const Text('Apakah Anda yakin ingin menindaklanjuti laporan ini?'),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         actions: [
           TextButton(
@@ -368,19 +381,10 @@ class _HistoryScreenState extends State<HistoryScreen>
             onPressed: () {
               Navigator.pop(dialogCtx);
               Navigator.pop(context);
-              _updateStatus(report, 'Diproses');
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.warningOrange),
-            child: const Text('Diproses'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(dialogCtx);
-              Navigator.pop(context);
-              _updateStatus(report, 'Selesai');
+              _updateStatus(report, 'Ditindaklanjuti');
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppTheme.successGreen),
-            child: const Text('Selesai'),
+            child: const Text('Tindak Lanjuti'),
           ),
         ],
       ),
@@ -401,7 +405,7 @@ class _HistoryScreenState extends State<HistoryScreen>
     if (success) {
       scaffoldMessenger.showSnackBar(
         SnackBar(
-          content: Text('Status laporan berhasil diperbarui menjadi $status'),
+          content: const Text('Laporan berhasil ditindaklanjuti'),
           backgroundColor: AppTheme.successGreen,
         ),
       );
@@ -446,14 +450,10 @@ class _HistoryScreenState extends State<HistoryScreen>
 
   Color _getStatusColor(String status) {
     switch (status) {
-      case 'Selesai':
+      case 'Ditindaklanjuti':
         return AppTheme.successGreen;
-      case 'Diproses':
-        return AppTheme.processingBlue;
-      case 'Ditolak':
-        return AppTheme.dangerRed;
       default:
-        return AppTheme.warningOrange;
+        return AppTheme.primaryBlue;
     }
   }
 }

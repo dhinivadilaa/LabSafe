@@ -13,8 +13,8 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen>
     with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController(text: 'dhini@student.unila.ac.id');
-  final _passwordController = TextEditingController(text: '12345678');
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   bool _obscurePassword = true;
   late AnimationController _animController;
   late Animation<Offset> _slideAnim;
@@ -204,7 +204,9 @@ class _LoginScreenState extends State<LoginScreen>
                           Align(
                             alignment: Alignment.centerRight,
                             child: TextButton(
-                              onPressed: () {},
+                              onPressed: () {
+                                Navigator.pushNamed(context, '/forgot-password');
+                              },
                               child: const Text(
                                 'Lupa password?',
                                 style: TextStyle(color: AppTheme.primaryBlue),
@@ -242,7 +244,9 @@ class _LoginScreenState extends State<LoginScreen>
                                 style: TextStyle(color: AppTheme.grey600),
                               ),
                               TextButton(
-                                onPressed: () {},
+                                onPressed: () {
+                                  Navigator.pushNamed(context, '/register');
+                                },
                                 style: TextButton.styleFrom(
                                   padding: EdgeInsets.zero,
                                   minimumSize: Size.zero,
@@ -260,38 +264,7 @@ class _LoginScreenState extends State<LoginScreen>
                             ],
                           ),
                           const SizedBox(height: 20),
-                          // Demo hint
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: AppTheme.accentBlue.withOpacity(0.08),
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(
-                                color: AppTheme.accentBlue.withOpacity(0.2),
-                              ),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: const [
-                                Text(
-                                  '💡 Demo Login:',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 12,
-                                    color: AppTheme.primaryBlue,
-                                  ),
-                                ),
-                                SizedBox(height: 4),
-                                Text(
-                                  'Email: dhini@student.unila.ac.id\nPassword: 12345678',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: AppTheme.grey800,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                          const SizedBox(height: 8),
                         ],
                       ),
                     ),

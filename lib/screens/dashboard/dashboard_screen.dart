@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/date_formatter.dart';
+import '../../models/user_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/report_provider.dart';
 import '../../models/report_model.dart';
@@ -30,10 +31,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ReportProvider>().loadRecentReports();
-      final userId = context.read<AuthProvider>().user?.id;
-      if (userId != null) {
-        context.read<ReportProvider>().loadNotifications(userId);
+      final user = context.read<AuthProvider>().user;
+      final isStudent = user?.role == 'mahasiswa';
+      context.read<ReportProvider>().loadRecentReports(userId: isStudent ? user?.id : null);
+      if (user?.id != null) {
+        context.read<ReportProvider>().loadNotifications(user!.id);
       }
       _loadStats();
     });
@@ -68,12 +70,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
       final pendingCount = context
           .read<ReportProvider>()
           .reports
-          .where((r) => r.status == 'Menunggu')
+          .where((r) => r.status == 'Terkirim')
           .length;
       stats['pendingReports'] = pendingCount;
       if (mounted) {
         setState(() => _stats = stats);
       }
+    }
   }
 
   Future<void> _pickAndUploadPhoto() async {
@@ -163,7 +166,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final user = auth.user;
 
     final List<Widget> tabs = [
-      _buildHomeTab(user?.name ?? 'Pengguna'),
+      _buildHomeTab(user),
       const _HistoryTabPlaceholder(),
       const _NotificationTabPlaceholder(),
       _buildProfileTab(user),
@@ -247,7 +250,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildHomeTab(String userName) {
+  Widget _buildHomeTab(UserModel? user) {
+    final userName = user?.name ?? 'Pengguna';
     return CustomScrollView(
       slivers: [
         SliverAppBar(
@@ -271,7 +275,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Column(
+                              Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
@@ -290,7 +294,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             ),
                           ),
                           Text(
-                            context.read<AuthProvider>().user?.roleLabel ??
+                            user?.roleLabel ??
                                 'Mahasiswa',
                             style: TextStyle(
                               color: AppTheme.accentCyan.withOpacity(0.9),
@@ -307,10 +311,57 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             icon: const Icon(Icons.notifications_outlined,
                                 color: Colors.white),
                           ),
-                          IconButton(
-                            onPressed: () {},
+                          PopupMenuButton<String>(
+                            color: AppTheme.primaryBlue,
                             icon: const Icon(Icons.menu_rounded,
                                 color: Colors.white),
+                            onSelected: (value) async {
+                              if (value == 'profile') {
+                                setState(() => _selectedTab = 3);
+                              } else if (value == 'history') {
+                                Navigator.pushNamed(context, '/history');
+                              } else if (value == 'logout') {
+                                await context.read<AuthProvider>().signOut();
+                                if (mounted) {
+                                  Navigator.pushReplacementNamed(context, '/login');
+                                }
+                              }
+                            },
+                            itemBuilder: (context) => [
+                              const PopupMenuItem(
+                                value: 'profile',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.person_outline,
+                                        color: AppTheme.grey800),
+                                    SizedBox(width: 10),
+                                    Text('Profil'),
+                                  ],
+                                ),
+                              ),
+                              const PopupMenuItem(
+                                value: 'history',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.history_outlined,
+                                        color: AppTheme.grey800),
+                                    SizedBox(width: 10),
+                                    Text('Riwayat'),
+                                  ],
+                                ),
+                              ),
+                              const PopupMenuItem(
+                                value: 'logout',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.logout,
+                                        color: AppTheme.grey800),
+                                    SizedBox(width: 10),
+                                    Text('Keluar'),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -332,12 +383,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 const SizedBox(height: 16),
                 // Stats Grid
                 _buildStatsGrid(user?.role),
-                const SizedBox(height: 20),
-                // Emergency Button
-                _buildEmergencyButton(),
-                const SizedBox(height: 20),
-                // Recent Reports
-                _buildRecentReports(),
+                 if (user?.role == 'mahasiswa') ...[
+                   const SizedBox(height: 20),
+                   // Emergency Button
+                   _buildEmergencyButton(),
+                 ],
+                 const SizedBox(height: 20),
+                 // Recent Reports
+                 _buildRecentReports(),
               ],
             ),
           ),
@@ -463,16 +516,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
           AppTheme.primaryBlue,
         ),
         _statCard(
-          'Belum Ditindaklanjuti',
-          '${_stats['pendingReports'] ?? 0}',
-          Icons.pending_actions_rounded,
+          'Asisten Online',
+          '${_stats['onlineOfficers'] ?? 0}',
+          Icons.people_alt_rounded,
           AppTheme.successGreen,
         ),
         _statCard(
-          'Laboratorium',
-          '${_stats['totalLabs']}',
-          Icons.science_rounded,
-          AppTheme.warningOrange,
+          'Laporan Diterima',
+          '${_stats['pendingReports'] ?? 0}',
+          Icons.pending_actions_rounded,
+          AppTheme.primaryBlue,
         ),
       ],
     );
@@ -617,9 +670,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               );
             }
+            final isStaff = context.read<AuthProvider>().user?.role == 'asisten';
             return Column(
               children: report.recentReports
-                  .map((r) => _buildReportItem(r))
+                  .map((r) => _buildReportItem(r, isStaff))
                   .toList(),
             );
           },
@@ -628,7 +682,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildReportItem(ReportModel report) {
+  Widget _buildReportItem(ReportModel report, bool isStaff) {
     final statusColor = _getStatusColor(report.status);
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -685,7 +739,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
-              report.status,
+              report.displayStatus(isStaff),
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
@@ -811,14 +865,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Color _getStatusColor(String status) {
     switch (status) {
-      case 'Selesai':
+      case 'Ditindaklanjuti':
         return AppTheme.successGreen;
-      case 'Diproses':
-        return AppTheme.processingBlue;
-      case 'Ditolak':
-        return AppTheme.dangerRed;
       default:
-        return AppTheme.warningOrange;
+        return AppTheme.primaryBlue;
     }
   }
 }

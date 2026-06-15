@@ -74,13 +74,14 @@ class _LocationScreenState extends State<LocationScreen> {
   }
 
   void _useLocation() {
+    if (_position == null) return;
     Navigator.pushNamed(
       context,
       '/confirm-report',
       arguments: {
         'photoPath': _photoPath,
-        'latitude': _position?.latitude ?? -5.3642,
-        'longitude': _position?.longitude ?? 105.2421,
+        'latitude': _position!.latitude,
+        'longitude': _position!.longitude,
         'locationName': _locationName,
       },
     );
@@ -116,18 +117,6 @@ class _LocationScreenState extends State<LocationScreen> {
                   onTap: () {
                     setState(() {
                       _locationName = lab['name'];
-                      _position = Position(
-                        latitude: lab['lat'],
-                        longitude: lab['lng'],
-                        timestamp: DateTime.now(),
-                        accuracy: 10,
-                        altitude: 0,
-                        heading: 0,
-                        speed: 0,
-                        speedAccuracy: 0,
-                        altitudeAccuracy: 0,
-                        headingAccuracy: 0,
-                      );
                     });
                     Navigator.pop(context);
                   },
@@ -279,7 +268,7 @@ class _LocationScreenState extends State<LocationScreen> {
                 ),
                 const SizedBox(height: 20),
                 ElevatedButton.icon(
-                  onPressed: _isLoading ? null : _useLocation,
+                  onPressed: (_isLoading || _position == null) ? null : _useLocation,
                   icon: const Icon(Icons.check_circle_rounded),
                   label: const Text('GUNAKAN LOKASI INI'),
                   style: ElevatedButton.styleFrom(

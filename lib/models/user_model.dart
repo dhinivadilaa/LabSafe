@@ -3,7 +3,7 @@ class UserModel {
   final String name;
   final String email;
   final String npm; // Nomor Pokok Mahasiswa
-  final String role; // 'mahasiswa', 'laboran', 'petugas', 'admin'
+  final String role; // 'mahasiswa', 'asisten'
   final String? photoUrl;
   final DateTime createdAt;
 
@@ -17,13 +17,19 @@ class UserModel {
     required this.createdAt,
   });
 
+  static String _normalizeRole(String? rawRole) {
+    final role = rawRole?.toLowerCase();
+    if (role == 'asisten') return 'asisten';
+    return 'mahasiswa';
+  }
+
   factory UserModel.fromMap(Map<String, dynamic> map) {
     return UserModel(
       id: map['id'] ?? '',
       name: map['name'] ?? '',
       email: map['email'] ?? '',
       npm: map['npm'] ?? '',
-      role: map['role'] ?? 'mahasiswa',
+      role: _normalizeRole(map['role'] as String?),
       photoUrl: map['photoUrl'],
       createdAt: map['createdAt'] != null
           ? DateTime.parse(map['createdAt'])
@@ -45,14 +51,8 @@ class UserModel {
 
   String get roleLabel {
     switch (role) {
-      case 'laboran':
-        return 'Laboran';
-      case 'petugas':
-        return 'Petugas Keamanan';
       case 'asisten':
         return 'Asisten Praktikum';
-      case 'admin':
-        return 'Administrator';
       default:
         return 'Mahasiswa';
     }

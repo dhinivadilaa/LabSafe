@@ -2,11 +2,14 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import '../models/report_model.dart';
 import '../services/report_service.dart';
+import '../services/notification_service.dart';
 
 class ReportProvider extends ChangeNotifier {
   List<ReportModel> _reports = [];
   List<ReportModel> _recentReports = [];
   List<Map<String, dynamic>> _notifications = [];
+  final Set<String> _notifiedIds = {};
+  bool _isFirstNotificationLoad = true;
   bool _isLoading = false;
   bool _isSubmitting = false;
   String? _errorMessage;
@@ -38,10 +41,10 @@ class ReportProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> loadRecentReports() async {
+  Future<void> loadRecentReports({String? userId}) async {
     try {
       // Gunakan stream untuk real-time update
-      ReportService.getRecentReportsStream(limit: 3).listen((reports) {
+      ReportService.getRecentReportsStream(limit: 3, userId: userId).listen((reports) {
         _recentReports = reports;
         notifyListeners();
       });
@@ -51,8 +54,27 @@ class ReportProvider extends ChangeNotifier {
   }
 
   Future<void> loadNotifications(String userId) async {
+    _notifiedIds.clear();
+    _isFirstNotificationLoad = true;
     try {
       ReportService.getNotificationsStream(userId).listen((notifs) {
+        if (_isFirstNotificationLoad) {
+          _isFirstNotificationLoad = false;
+          _notifiedIds.addAll(notifs.map((n) => n['id'] as String));
+        } else {
+          for (final n in notifs) {
+            final id = n['id'] as String;
+            final isRead = n['read'] as bool? ?? false;
+            if (!isRead && !_notifiedIds.contains(id)) {
+              _notifiedIds.add(id);
+              NotificationService.showLocalNotification(
+                id: id.hashCode,
+                title: n['title'] ?? 'Notifikasi Baru',
+                body: n['message'] ?? '',
+              );
+            }
+          }
+        }
         _notifications = notifs;
         notifyListeners();
       });
@@ -92,7 +114,7 @@ class ReportProvider extends ChangeNotifier {
         photoFile: photoFile,
       );
 
-      // Kirim notifikasi ke petugas
+      // Kirim notifikasi ke asisten praktikum
       await ReportService.sendNotificationToOfficers(
         reporterName: reporterName,
         locationName: locationName,
@@ -102,6 +124,7 @@ class ReportProvider extends ChangeNotifier {
       _reports.insert(0, report);
       _todayCount++;
       _totalCount++;
+      await loadReports(userId: report.reporterId);
       _isSubmitting = false;
       notifyListeners();
       return report;
@@ -142,7 +165,7 @@ class ReportProvider extends ChangeNotifier {
         reporterId: reporterId,
         reportId: reportId,
         title: 'Laporan Ditindaklanjuti',
-        message: 'Terimakasih atas partisipasi anda melaporkan aktivitas mencurigakan, kami akan segera menindak lanjuti',
+        message: 'Terima kasih atas partisipasi Anda melaporkan aktivitas mencurigakan. Kami akan segera menindaklanjuti.',
       );
 
       // Reload

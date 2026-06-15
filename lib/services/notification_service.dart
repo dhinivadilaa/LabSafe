@@ -95,7 +95,33 @@ class NotificationService {
     return await _fcm.getToken();
   }
 
-  /// Subscribe ke topik (untuk petugas keamanan)
+  /// Tampilkan notifikasi push lokal pada status bar perangkat
+  static Future<void> showLocalNotification({
+    required int id,
+    required String title,
+    required String body,
+    String? payload,
+  }) async {
+    await _localNotif.show(
+      id,
+      title,
+      body,
+      NotificationDetails(
+        android: AndroidNotificationDetails(
+          _androidChannel.id,
+          _androidChannel.name,
+          channelDescription: _androidChannel.description,
+          importance: Importance.high,
+          priority: Priority.high,
+          icon: '@mipmap/ic_launcher',
+          playSound: true,
+        ),
+      ),
+      payload: payload,
+    );
+  }
+
+  /// Subscribe ke topik (untuk asisten praktikum)
   static Future<void> subscribeToOfficerAlerts() async {
     await _fcm.subscribeToTopic('officer_alerts');
   }

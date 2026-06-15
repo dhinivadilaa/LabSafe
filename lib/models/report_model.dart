@@ -42,7 +42,7 @@ class ReportModel {
       longitude: (map['longitude'] ?? 0.0).toDouble(),
       locationName: map['locationName'] ?? '',
       photoUrl: map['photoUrl'],
-      status: map['status'] ?? 'Menunggu',
+      status: map['status'] ?? 'Terkirim',
       createdAt: map['createdAt'] != null
           ? DateTime.parse(map['createdAt'])
           : DateTime.now(),
@@ -52,6 +52,13 @@ class ReportModel {
       handledBy: map['handledBy'],
       notes: map['notes'],
     );
+  }
+
+  String displayStatus(bool isStaff) {
+    if (status == 'Ditindaklanjuti') {
+      return isStaff ? 'Laporan Ditindak Lanjut' : 'Laporan Sudah Ditindaklanjuti';
+    }
+    return isStaff ? 'Laporan Diterima' : 'Laporan Terkirim';
   }
 
   Map<String, dynamic> toMap() {

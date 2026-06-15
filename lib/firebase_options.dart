@@ -44,6 +44,7 @@ class DefaultFirebaseOptions {
     appId: '1:101475056084:android:157b35e81f316f64af7e41',
     messagingSenderId: '101475056084',
     projectId: 'labsafe-bb2e7',
+    databaseURL: 'https://labsafe-bb2e7-default-rtdb.asia-southeast1.firebasedatabase.app',
     storageBucket: 'labsafe-bb2e7.firebasestorage.app',
   );
 }

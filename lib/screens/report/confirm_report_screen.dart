@@ -98,7 +98,7 @@ class _ConfirmReportScreenState extends State<ConfirmReportScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Laporan Anda telah berhasil dikirim. Petugas keamanan akan segera menindaklanjuti.',
+              'Laporan Anda telah berhasil dikirim. Asisten praktikum akan segera menindaklanjuti.',
               textAlign: TextAlign.center,
               style: TextStyle(color: AppTheme.grey600, fontSize: 13),
             ),

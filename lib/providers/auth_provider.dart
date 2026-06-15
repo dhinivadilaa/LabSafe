@@ -56,6 +56,61 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  Future<bool> register({
+    required String email,
+    required String password,
+    required String name,
+    required String npm,
+    String role = 'mahasiswa',
+  }) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final user = await AuthService.register(
+        email: email,
+        password: password,
+        name: name,
+        npm: npm,
+        role: role,
+      );
+      if (user != null) {
+        _user = user;
+        _isLoading = false;
+        notifyListeners();
+        return true;
+      }
+      _errorMessage = 'Registrasi gagal. Coba lagi.';
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    } catch (e) {
+      _errorMessage = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> resetPassword(String email) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      await AuthService.resetPassword(email);
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
   Future<void> signOut() async {
     await AuthService.signOut();
     _user = null;

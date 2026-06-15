@@ -41,15 +41,13 @@ class AuthService {
           ...data,
         });
       } else {
-        // Jika user belum ada di Database, buat data default
-        // asistenlab@gmail.com akan otomatis memiliki role 'asisten'
-        final isAsisten = email.trim() == 'asistenlab@gmail.com';
+        // Jika user belum ada di Database, buat data default dengan role 'mahasiswa'
         _currentUser = UserModel(
           id: credential.user!.uid,
           name: credential.user!.displayName ?? 'Pengguna',
           email: credential.user!.email ?? email,
           npm: '',
-          role: isAsisten ? 'asisten' : 'mahasiswa',
+          role: 'mahasiswa',
           createdAt: DateTime.now(),
         );
         // Simpan ke Database
@@ -60,6 +58,12 @@ class AuthService {
     } on FirebaseAuthException catch (e) {
       throw _handleAuthError(e);
     }
+  }
+
+  static String _normalizeRole(String role) {
+    final lower = role.toLowerCase();
+    if (lower == 'asisten') return 'asisten';
+    return 'mahasiswa';
   }
 
   /// Register user baru
@@ -78,15 +82,12 @@ class AuthService {
 
       await credential.user?.updateDisplayName(name);
 
-      final isAsisten = email.trim() == 'asistenlab@gmail.com';
-      final finalRole = isAsisten ? 'asisten' : role;
-
       final user = UserModel(
         id: credential.user!.uid,
         name: name,
         email: email,
         npm: npm,
-        role: finalRole,
+        role: _normalizeRole(role),
         createdAt: DateTime.now(),
       );
 
@@ -174,14 +175,15 @@ class AuthService {
         }
       }
 
-      // Ambil user untuk menghitung jumlah petugas online
+      // Ambil user untuk menghitung jumlah asisten online
       final usersSnapshot = await _db.child('users').get();
       int officersCount = 0;
       if (usersSnapshot.exists && usersSnapshot.value != null) {
         final rawUsers = usersSnapshot.value as Map;
         final users = _castMap(rawUsers);
         for (final userData in users.values) {
-          if (userData['role'] == 'petugas') {
+          final role = userData['role'] as String?;
+          if (role == 'asisten') {
             officersCount++;
           }
         }

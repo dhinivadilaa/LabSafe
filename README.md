@@ -2,7 +2,7 @@
 
 **Aplikasi Pelaporan Aktivitas Mencurigakan di Laboratorium**
 
-LabSafe adalah aplikasi mobile Flutter yang memungkinkan mahasiswa dan laboran melaporkan aktivitas mencurigakan secara cepat menggunakan sensor smartphone.
+LabSafe adalah aplikasi mobile Flutter yang memungkinkan mahasiswa melaporkan aktivitas mencurigakan secara cepat menggunakan sensor smartphone.
 
 ---
 
@@ -15,8 +15,8 @@ LabSafe adalah aplikasi mobile Flutter yang memungkinkan mahasiswa dan laboran m
 | 📳 Deteksi Shake | Guncangkan HP untuk trigger laporan darurat |
 | 📍 GPS Lokasi | Deteksi lokasi otomatis |
 | 📷 Kamera | Ambil foto bukti |
-| 📤 Kirim Laporan | Laporan real-time ke petugas |
-| 🔔 Notifikasi | Alert ke petugas keamanan |
+| 📤 Kirim Laporan | Laporan real-time ke asisten praktikum |
+| 🔔 Notifikasi | Alert ke asisten praktikum |
 | 📋 Riwayat | Histori semua laporan |
 
 ---
@@ -58,8 +58,7 @@ flutter run
 | Role | Email | Password |
 |------|-------|----------|
 | Mahasiswa | dhini@student.unila.ac.id | 12345678 |
-| Laboran | laboran@unila.ac.id | laboran123 |
-| Petugas | petugas@unila.ac.id | petugas123 |
+| Asisten Praktikum | asistenlab@gmail.com | 12345678 |
 
 ---
 

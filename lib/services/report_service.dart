@@ -18,7 +18,7 @@ class ReportService {
     });
   }
 
-  /// Ambil semua laporan (untuk admin/petugas/asisten) atau per user
+  /// Ambil semua laporan (untuk asisten) atau per user
   static Future<List<ReportModel>> getReports({String? userId}) async {
     try {
       final snapshot = await _db.child('reports').get();
@@ -46,7 +46,7 @@ class ReportService {
   }
 
   /// Laporan terbaru untuk dashboard (real-time)
-  static Stream<List<ReportModel>> getRecentReportsStream({int limit = 3}) {
+  static Stream<List<ReportModel>> getRecentReportsStream({int limit = 3, String? userId}) {
     return _db.child('reports').onValue.map((event) {
       final snapshot = event.snapshot;
       if (!snapshot.exists || snapshot.value == null) return [];
@@ -62,7 +62,11 @@ class ReportService {
       // Urutkan terbaru dahulu
       reports.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
-      return reports.take(limit).toList();
+      final filteredReports = userId == null
+          ? reports
+          : reports.where((r) => r.reporterId == userId).toList();
+
+      return filteredReports.take(limit).toList();
     });
   }
 
@@ -126,7 +130,7 @@ class ReportService {
       'longitude': longitude,
       'locationName': locationName,
       'photoUrl': photoUrl,
-      'status': 'Menunggu',
+      'status': 'Terkirim',
       'createdAt': now.toIso8601String(),
       'updatedAt': null,
       'handledBy': null,
@@ -207,13 +211,13 @@ class ReportService {
     await _db.child('notifications/$notifId').update({'read': true});
   }
 
-  /// Kirim notifikasi ke petugas/asisten (dipanggil setelah submit laporan)
+  /// Kirim notifikasi ke asisten (dipanggil setelah submit laporan)
   static Future<void> sendNotificationToOfficers({
     required String reporterName,
     required String locationName,
     required String reportId,
   }) async {
-    // Ambil semua user yang ber-role 'asisten', 'petugas', 'laboran', atau 'admin'
+    // Ambil semua user yang ber-role 'asisten'
     final usersSnapshot = await _db.child('users').get();
     if (!usersSnapshot.exists || usersSnapshot.value == null) return;
 
@@ -227,14 +231,14 @@ class ReportService {
       final userData = entry.value as Map;
       final role = userData['role'] as String?;
 
-      if (role == 'asisten' || role == 'petugas' || role == 'laboran' || role == 'admin') {
+      if (role == 'asisten') {
         final notifId = _uuid.v4();
         await _db.child('notifications/$notifId').set({
           'targetUserId': userId,
           'type': 'new',
           'title': 'Laporan Baru!',
           'message':
-              'Aktivitas mencurigakan dilaporkan oleh $reporterName di $locationName',
+              'Aktivitas mencurigakan dilaporkan oleh $reporterName di $locationName. Mohon segera pantau dan tindak lanjuti.',
           'reportId': reportId,
           'read': false,
           'createdAt': now,
