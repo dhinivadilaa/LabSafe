@@ -1,0 +1,61 @@
+name: labsafe
+description: LabSafe - Aplikasi Pelaporan Aktivitas Mencurigakan di Laboratorium
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State Management
+  provider: ^6.1.2
+
+  # Firebase Core
+  firebase_core: ^3.15.0
+
+  # Firebase Authentication
+  firebase_auth: ^5.1.0
+
+  # Firebase Realtime Database
+  firebase_database: ^11.1.0
+
+  # Firebase Storage (File/Photo Upload)
+  firebase_storage: ^12.0.0
+
+  # Firebase Cloud Messaging (Push Notification)
+  firebase_messaging: ^15.0.0
+
+  # Local Notifications
+  flutter_local_notifications: ^17.2.2
+
+  # Sensors
+  sensors_plus: ^4.0.2
+
+  # Location / GPS
+  geolocator: ^11.0.0
+
+  # Camera & Image
+  image_picker: ^1.1.2
+
+  # Date formatting
+  intl: ^0.19.0
+
+  # Shared Preferences (local storage)
+  shared_preferences: ^2.3.2
+
+  # UUID generator
+  uuid: ^4.5.1
+
+  # UI
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true

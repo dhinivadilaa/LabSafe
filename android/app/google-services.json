@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "101475056084",
+    "project_id": "labsafe-bb2e7",
+    "storage_bucket": "labsafe-bb2e7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:101475056084:android:157b35e81f316f64af7e41",
+        "android_client_info": {
+          "package_name": "com.labsafe.labsafe"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBtBxY7v8bjlKKX-1zdZkPVd7De0k1cFQc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
