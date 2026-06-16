@@ -1,72 +1,80 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  // Primary Colors
-  static const Color primaryDark = Color(0xFF0A1628);
-  static const Color primaryMid = Color(0xFF1A2F5E);
-  static const Color primaryBlue = Color(0xFF1565C0);
-  static const Color accentBlue = Color(0xFF2196F3);
-  static const Color accentCyan = Color(0xFF00BCD4);
+  // Primary Colors (Dark Blue / Navy / Slate)
+  static const Color primaryDark = Color(0xFF0F172A); // Slate 900
+  static const Color primaryMid = Color(0xFF1E293B); // Slate 800
+  static const Color primaryBlue = Color(0xFF2563EB); // Blue 600
+  static const Color accentBlue = Color(0xFF3B82F6); // Blue 500
+  static const Color accentCyan = Color(0xFF0EA5E9); // Sky 500 (replacement for Cyan)
 
-  // Status Colors
-  static const Color dangerRed = Color(0xFFD32F2F);
-  static const Color dangerRedLight = Color(0xFFEF5350);
-  static const Color successGreen = Color(0xFF388E3C);
-  static const Color successGreenLight = Color(0xFF4CAF50);
-  static const Color warningOrange = Color(0xFFF57C00);
-  static const Color warningOrangeLight = Color(0xFFFF9800);
-  static const Color processingBlue = Color(0xFF1565C0);
+  // Semantic/Status Colors (Lebih elegan)
+  static const Color dangerRed = Color(0xFFEF4444); // Red 500
+  static const Color successGreen = Color(0xFF10B981); // Emerald 500
+  static const Color warningOrange = Color(0xFFF59E0B); // Amber 500
 
   // Neutral Colors
   static const Color white = Color(0xFFFFFFFF);
-  static const Color grey50 = Color(0xFFFAFAFA);
-  static const Color grey100 = Color(0xFFF5F5F5);
-  static const Color grey200 = Color(0xFFEEEEEE);
-  static const Color grey400 = Color(0xFFBDBDBD);
-  static const Color grey600 = Color(0xFF757575);
-  static const Color grey800 = Color(0xFF424242);
-  static const Color darkBg = Color(0xFF0D1B2A);
+  static const Color grey50 = Color(0xFFF8FAFC); // Slate 50
+  static const Color grey100 = Color(0xFFF1F5F9); // Slate 100
+  static const Color grey200 = Color(0xFFE2E8F0); // Slate 200
+  static const Color grey400 = Color(0xFF94A3B8); // Slate 400
+  static const Color grey600 = Color(0xFF475569); // Slate 600
+  static const Color grey800 = Color(0xFF1E293B); // Slate 800
 
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
-      fontFamily: 'Poppins',
+      textTheme: GoogleFonts.interTextTheme(),
       colorScheme: ColorScheme.fromSeed(
         seedColor: primaryBlue,
         brightness: Brightness.light,
         primary: primaryBlue,
-        secondary: accentCyan,
+        secondary: accentBlue,
         error: dangerRed,
-        surface: white,
+        surface: grey50,
       ),
       scaffoldBackgroundColor: grey50,
-      appBarTheme: const AppBarTheme(
-        backgroundColor: primaryMid,
+      appBarTheme: AppBarTheme(
+        backgroundColor: primaryDark,
         foregroundColor: white,
         elevation: 0,
         centerTitle: true,
-        titleTextStyle: TextStyle(
+        titleTextStyle: GoogleFonts.inter(
           color: white,
           fontSize: 18,
           fontWeight: FontWeight.w600,
-          fontFamily: 'Poppins',
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: dangerRed,
+          backgroundColor: primaryBlue,
           foregroundColor: white,
           minimumSize: const Size(double.infinity, 52),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          textStyle: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            fontFamily: 'Poppins',
-            letterSpacing: 1,
+          textStyle: GoogleFonts.inter(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.5,
           ),
-          elevation: 3,
+          elevation: 0,
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: primaryBlue,
+          side: const BorderSide(color: grey200, width: 1.5),
+          minimumSize: const Size(double.infinity, 52),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          textStyle: GoogleFonts.inter(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
@@ -82,17 +90,24 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: primaryBlue, width: 2),
+          borderSide: const BorderSide(color: primaryBlue, width: 1.5),
         ),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: dangerRed, width: 1.5),
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        labelStyle: GoogleFonts.inter(color: grey600, fontSize: 14),
+        hintStyle: GoogleFonts.inter(color: grey400, fontSize: 14),
       ),
       cardTheme: CardThemeData(
-        elevation: 2,
+        elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: grey200, width: 1),
         ),
         color: white,
+        margin: EdgeInsets.zero,
       ),
     );
   }

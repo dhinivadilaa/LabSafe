@@ -1,9 +1,22 @@
 import 'package:geolocator/geolocator.dart';
+import '../core/constants/app_constants.dart';
+import '../models/lab_location.dart';
+import '../models/location_result.dart';
 
+/// Service untuk mengelola akses GPS dan deteksi laboratorium terdekat.
+///
+/// Level 2: Context-Aware Geofencing
+/// - Menggunakan Geolocator.distanceBetween() (Haversine) untuk jarak akurat dalam meter
+/// - Geofencing berbasis radius per lab
+/// - Single source of truth dari AppConstants.laboratories
 class LocationService {
   static Position? _lastPosition;
+  static LocationResult? _lastLocationResult;
 
-  /// Request location permission and get current position (real GPS)
+  /// Request location permission dan ambil posisi GPS terkini.
+  ///
+  /// Method ini tidak berubah dari versi sebelumnya — hanya mengurus
+  /// permission handling dan pengambilan koordinat GPS.
   static Future<Position?> getCurrentLocation() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
@@ -33,30 +46,81 @@ class LocationService {
     }
   }
 
-  /// Find nearest lab based on coordinates
-  static String getNearestLabName(double lat, double lng) {
-    const labs = [
-      {'name': 'Lab Komputer A', 'lat': -5.3642, 'lng': 105.2421},
-      {'name': 'Lab Kimia', 'lat': -5.3650, 'lng': 105.2430},
-      {'name': 'Lab Fisika', 'lat': -5.3655, 'lng': 105.2440},
-      {'name': 'Lab Biologi', 'lat': -5.3660, 'lng': 105.2445},
-      {'name': 'Lab Jaringan', 'lat': -5.3648, 'lng': 105.2428},
-    ];
+  /// Cari lab terdekat dan tentukan konteks lokasi user.
+  ///
+  /// Menggunakan [Geolocator.distanceBetween] yang mengimplementasikan
+  /// rumus Haversine — menghitung jarak geodesik (great-circle distance)
+  /// di permukaan bumi, menghasilkan jarak dalam **meter**.
+  ///
+  /// Kenapa bukan dLat² + dLng² (versi lama)?
+  /// → Karena 1° latitude ≠ 1° longitude dalam satuan meter.
+  ///   Di khatulistiwa, 1° lat ≈ 111 km, tapi 1° lng ≈ 111 × cos(lat) km.
+  ///   Haversine memperhitungkan kelengkungan bumi secara akurat.
+  ///
+  /// Returns [LocationResult] berisi:
+  /// - Lab terdekat ([LabLocation])
+  /// - Jarak aktual dalam meter
+  /// - Status geofence (di dalam lab / di area kampus / di luar)
+  static LocationResult findNearestLab(Position position) {
+    const labs = AppConstants.laboratories;
 
-    String nearest = 'Laboratorium Kampus';
-    double minDist = double.infinity;
+    LabLocation nearestLab = labs.first;
+    double minDistance = double.infinity;
 
     for (final lab in labs) {
-      final dLat = (lab['lat'] as double) - lat;
-      final dLng = (lab['lng'] as double) - lng;
-      final dist = dLat * dLat + dLng * dLng;
-      if (dist < minDist) {
-        minDist = dist;
-        nearest = lab['name'] as String;
+      // Haversine distance — akurat untuk jarak pendek maupun jauh
+      final distance = Geolocator.distanceBetween(
+        position.latitude,
+        position.longitude,
+        lab.latitude,
+        lab.longitude,
+      );
+
+      if (distance < minDistance) {
+        minDistance = distance;
+        nearestLab = lab;
       }
     }
-    return nearest;
+
+    // Geofencing: tentukan apakah user di dalam lab atau di area kampus
+    final isInsideLab = minDistance <= nearestLab.radiusMeters;
+    final isInsideCampus = minDistance <= AppConstants.campusRadiusMeters;
+
+    final result = LocationResult(
+      position: position,
+      nearestLab: nearestLab,
+      distanceMeters: minDistance,
+      isInsideLab: isInsideLab,
+      isInsideCampus: isInsideCampus,
+    );
+
+    _lastLocationResult = result;
+    return result;
+  }
+
+  /// Backward-compatible wrapper — mengembalikan nama lab terdekat saja.
+  ///
+  /// Dipertahankan agar kode lain yang masih memanggil method ini
+  /// tidak langsung rusak. Secara internal sudah pakai Haversine.
+  static String getNearestLabName(double lat, double lng) {
+    // Buat Position sementara untuk kompatibilitas
+    final result = findNearestLab(
+      Position(
+        latitude: lat,
+        longitude: lng,
+        timestamp: DateTime.now(),
+        accuracy: 0,
+        altitude: 0,
+        altitudeAccuracy: 0,
+        heading: 0,
+        headingAccuracy: 0,
+        speed: 0,
+        speedAccuracy: 0,
+      ),
+    );
+    return result.nearestLab.name;
   }
 
   static Position? get lastPosition => _lastPosition;
+  static LocationResult? get lastLocationResult => _lastLocationResult;
 }

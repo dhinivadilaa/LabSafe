@@ -10,6 +10,9 @@ import '../../providers/auth_provider.dart';
 import '../../providers/report_provider.dart';
 import '../../models/report_model.dart';
 import '../../services/auth_service.dart';
+import '../../models/lab_safety_insight.dart';
+import '../../services/lab_safety_service.dart';
+import '../../widgets/lab_monitoring_card.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -26,6 +29,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     'onlineOfficers': 3,
     'totalLabs': 5,
   };
+  List<LabSafetyInsight> _labInsights = [];
+  bool _isLoadingInsights = true;
 
   @override
   void initState() {
@@ -73,8 +78,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
           .where((r) => r.status == 'Terkirim')
           .length;
       stats['pendingReports'] = pendingCount;
+      
+      // Load dynamic safety insights
+      final insights = await LabSafetyService.getAllLabInsights();
+      
       if (mounted) {
-        setState(() => _stats = stats);
+        setState(() {
+          _stats = stats;
+          _labInsights = insights;
+          _isLoadingInsights = false;
+        });
       }
     }
   }
@@ -381,12 +394,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 // Status System Card
                 _buildStatusCard(),
                 const SizedBox(height: 16),
-                // Stats Grid
-                _buildStatsGrid(user?.role),
+                 // Stats Grid
+                 _buildStatsGrid(user?.role),
                  if (user?.role == 'mahasiswa') ...[
                    const SizedBox(height: 20),
                    // Emergency Button
                    _buildEmergencyButton(),
+                 ] else ...[
+                   const SizedBox(height: 20),
+                   // Safety Insights (Asisten)
+                   _buildSafetyInsights(),
                  ],
                  const SizedBox(height: 20),
                  // Recent Reports
@@ -583,6 +600,76 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildSafetyInsights() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Monitoring Laboratorium',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: AppTheme.grey800,
+          ),
+        ),
+        const SizedBox(height: 16),
+        if (_isLoadingInsights)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 32),
+            child: Center(
+              child: Column(
+                children: [
+                  const CircularProgressIndicator(color: AppTheme.primaryBlue),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Memuat data laporan...',
+                    style: TextStyle(color: AppTheme.grey500, fontSize: 14),
+                  ),
+                ],
+              ),
+            ),
+          )
+        else if (_labInsights.every((insight) => insight.recentReportCount == 0))
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+              decoration: BoxDecoration(
+                color: AppTheme.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppTheme.grey200),
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppTheme.successGreen.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.shield_rounded, color: AppTheme.successGreen, size: 32),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Seluruh Area Lab Aman',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppTheme.grey800),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Tidak ada insiden tercatat dalam 7 hari terakhir.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: AppTheme.grey500, fontSize: 13),
+                  ),
+                ],
+              ),
+            )
+        else
+          ..._labInsights.where((insight) => insight.recentReportCount > 0).take(4).map((insight) {
+            return LabMonitoringCard(insight: insight);
+          }).toList(),
+      ],
     );
   }
 

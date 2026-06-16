@@ -16,9 +16,10 @@ class ConfirmReportScreen extends StatefulWidget {
 
 class _ConfirmReportScreenState extends State<ConfirmReportScreen> {
   String? _photoPath;
-  double _latitude = -5.3642;
-  double _longitude = 105.2421;
-  String _locationName = 'Lab Komputer A';
+  double _latitude = -5.36430;
+  double _longitude = 105.24210;
+  String _locationName = 'Lab Sistem Tenaga Listrik';
+  String _building = 'Gedung Teknik Elektro';
   String _reportType = AppConstants.reportTypes.first;
   final _descController = TextEditingController();
 
@@ -30,9 +31,10 @@ class _ConfirmReportScreenState extends State<ConfirmReportScreen> {
       if (args != null) {
         setState(() {
           _photoPath = args['photoPath'];
-          _latitude = args['latitude'] ?? -5.3642;
-          _longitude = args['longitude'] ?? 105.2421;
-          _locationName = args['locationName'] ?? 'Lab Komputer A';
+          _latitude = args['latitude'] ?? -5.36430;
+          _longitude = args['longitude'] ?? 105.24210;
+          _locationName = args['locationName'] ?? 'Lab Sistem Tenaga Listrik';
+          _building = args['building'] ?? 'Gedung Teknik Elektro';
         });
       }
     });
@@ -73,47 +75,59 @@ class _ConfirmReportScreenState extends State<ConfirmReportScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: const BoxDecoration(
-                color: AppTheme.successGreen,
-                shape: BoxShape.circle,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 20),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: AppTheme.successGreen.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.check_circle_rounded,
+                    color: AppTheme.successGreen, size: 56),
               ),
-              child: const Icon(Icons.check_rounded,
-                  color: Colors.white, size: 50),
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              'Laporan Terkirim!',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: AppTheme.successGreen,
+              const SizedBox(height: 24),
+              const Text(
+                'Laporan Terkirim!',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.grey800,
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Laporan Anda telah berhasil dikirim. Asisten praktikum akan segera menindaklanjuti.',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: AppTheme.grey600, fontSize: 13),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamedAndRemoveUntil(
-                    context, '/dashboard', (route) => false);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryBlue,
+              const SizedBox(height: 12),
+              const Text(
+                'Terima kasih, kontribusi Anda sangat berarti untuk membantu kami menjaga keselamatan laboratorium bersama.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: AppTheme.grey600, fontSize: 14, height: 1.5),
               ),
-              child: const Text('Kembali ke Beranda'),
-            ),
-          ],
+              const SizedBox(height: 32),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pushNamedAndRemoveUntil(
+                        context, '/dashboard', (route) => false);
+                  },
+                  child: const Text('Kembali ke Dashboard'),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -125,7 +139,7 @@ class _ConfirmReportScreenState extends State<ConfirmReportScreen> {
       appBar: AppBar(
         title: const Text('Konfirmasi Laporan'),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_rounded),
+          icon: const Icon(Icons.arrow_back_ios_rounded, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -135,9 +149,9 @@ class _ConfirmReportScreenState extends State<ConfirmReportScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Detail Laporan',
+              'Detail Informasi',
               style: TextStyle(
-                fontSize: 18,
+                fontSize: 16,
                 fontWeight: FontWeight.bold,
                 color: AppTheme.grey800,
               ),
@@ -146,41 +160,47 @@ class _ConfirmReportScreenState extends State<ConfirmReportScreen> {
             // Report type
             _detailRow(
               icon: Icons.warning_rounded,
-              color: AppTheme.dangerRed,
-              label: 'Jenis Laporan',
-              child: DropdownButton<String>(
-                value: _reportType,
-                underline: const SizedBox(),
-                isExpanded: true,
-                items: AppConstants.reportTypes
-                    .map((t) => DropdownMenuItem(value: t, child: Text(t, style: const TextStyle(fontSize: 14))))
-                    .toList(),
-                onChanged: (v) => setState(() => _reportType = v!),
+              color: AppTheme.warningOrange,
+              label: 'Kategori Insiden',
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  value: _reportType,
+                  isExpanded: true,
+                  icon: const Icon(Icons.keyboard_arrow_down_rounded, color: AppTheme.grey600),
+                  items: AppConstants.reportTypes
+                      .map((t) => DropdownMenuItem(
+                            value: t,
+                            child: Text(t,
+                                style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppTheme.grey800)),
+                          ))
+                      .toList(),
+                  onChanged: (v) => setState(() => _reportType = v!),
+                ),
               ),
             ),
             _detailRow(
               icon: Icons.location_on_rounded,
               color: AppTheme.primaryBlue,
-              label: 'Lokasi',
-              value: _locationName,
+              label: 'Lokasi Terdeteksi',
+              value: '$_locationName\n$_building',
             ),
             _detailRow(
               icon: Icons.access_time_rounded,
               color: AppTheme.successGreen,
-              label: 'Waktu',
+              label: 'Waktu Kejadian',
               value: DateFormatter.formatShort(DateTime.now()),
             ),
+            const SizedBox(height: 8),
             // Description
-            const SizedBox(height: 4),
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(14),
-                boxShadow: [
-                  BoxShadow(
-                      color: Colors.black.withOpacity(0.05), blurRadius: 8),
-                ],
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppTheme.grey200),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -190,51 +210,40 @@ class _ConfirmReportScreenState extends State<ConfirmReportScreen> {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: AppTheme.warningOrange.withOpacity(0.1),
+                          color: AppTheme.grey100,
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Icon(Icons.description_rounded,
-                            color: AppTheme.warningOrange, size: 20),
+                        child: const Icon(Icons.notes_rounded,
+                            color: AppTheme.grey600, size: 20),
                       ),
                       const SizedBox(width: 12),
                       const Text(
-                        'Deskripsi (opsional)',
+                        'Deskripsi Tambahan',
                         style: TextStyle(
                             fontWeight: FontWeight.w600,
                             color: AppTheme.grey800),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 16),
                   TextField(
                     controller: _descController,
-                    maxLines: 3,
-                    decoration: InputDecoration(
-                      hintText: 'Jelaskan aktivitas mencurigakan yang Anda lihat...',
-                      hintStyle: TextStyle(
-                          color: AppTheme.grey400, fontSize: 13),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide:
-                            const BorderSide(color: AppTheme.grey200),
-                      ),
-                      contentPadding: const EdgeInsets.all(12),
+                    maxLines: 4,
+                    decoration: const InputDecoration(
+                      hintText: 'Jelaskan secara singkat apa yang terjadi...',
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             // Photo preview
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(14),
-                boxShadow: [
-                  BoxShadow(
-                      color: Colors.black.withOpacity(0.05), blurRadius: 8),
-                ],
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppTheme.grey200),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -244,47 +253,53 @@ class _ConfirmReportScreenState extends State<ConfirmReportScreen> {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: AppTheme.accentCyan.withOpacity(0.1),
+                          color: AppTheme.grey100,
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Icon(Icons.photo_camera_rounded,
-                            color: AppTheme.accentCyan, size: 20),
+                        child: const Icon(Icons.camera_alt_rounded,
+                            color: AppTheme.grey600, size: 20),
                       ),
                       const SizedBox(width: 12),
                       const Text(
-                        'Bukti Foto',
+                        'Bukti Lampiran',
                         style: TextStyle(
                             fontWeight: FontWeight.w600,
                             color: AppTheme.grey800),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 16),
                   if (_photoPath != null)
                     ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(12),
                       child: Stack(
                         children: [
                           Image.file(
                             File(_photoPath!),
-                            height: 150,
+                            height: 180,
                             width: double.infinity,
                             fit: BoxFit.cover,
                           ),
                           Positioned(
-                            top: 8,
-                            right: 8,
+                            top: 12,
+                            right: 12,
                             child: Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 4),
+                                  horizontal: 12, vertical: 6),
                               decoration: BoxDecoration(
-                                color: AppTheme.successGreen,
+                                color: AppTheme.primaryDark.withOpacity(0.8),
                                 borderRadius: BorderRadius.circular(20),
                               ),
-                              child: const Text(
-                                'Lihat Foto',
-                                style: TextStyle(
-                                    color: Colors.white, fontSize: 11),
+                              child: const Row(
+                                children: [
+                                  Icon(Icons.check_circle_outline_rounded, color: Colors.white, size: 14),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    'Terlampir',
+                                    style: TextStyle(
+                                        color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500),
+                                  ),
+                                ],
                               ),
                             ),
                           ),
@@ -293,46 +308,59 @@ class _ConfirmReportScreenState extends State<ConfirmReportScreen> {
                     )
                   else
                     Container(
-                      height: 80,
+                      height: 100,
                       decoration: BoxDecoration(
-                        color: AppTheme.grey100,
-                        borderRadius: BorderRadius.circular(10),
+                        color: AppTheme.grey50,
+                        borderRadius: BorderRadius.circular(12),
                         border: Border.all(
                             color: AppTheme.grey200,
                             style: BorderStyle.solid),
                       ),
                       child: const Center(
-                        child: Text(
-                          'Tidak ada foto',
-                          style: TextStyle(color: AppTheme.grey600),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.image_not_supported_rounded, color: AppTheme.grey400, size: 32),
+                            SizedBox(height: 8),
+                            Text(
+                              'Tidak ada foto terlampir',
+                              style: TextStyle(color: AppTheme.grey600, fontSize: 13),
+                            ),
+                          ],
                         ),
                       ),
                     ),
                 ],
               ),
             ),
-            const SizedBox(height: 28),
+            const SizedBox(height: 32),
             Consumer<ReportProvider>(
               builder: (context, report, _) {
-                return ElevatedButton.icon(
+                return ElevatedButton(
                   onPressed: report.isSubmitting ? null : _submitReport,
-                  icon: report.isSubmitting
-                      ? const SizedBox(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.dangerRed, // Action ini tetap merah karena urgensi
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      if (report.isSubmitting)
+                        const SizedBox(
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(
                               color: Colors.white, strokeWidth: 2),
                         )
-                      : const Icon(Icons.send_rounded),
-                  label: Text(
-                      report.isSubmitting ? 'Mengirim...' : 'KIRIM LAPORAN'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.dangerRed,
+                      else
+                        const Icon(Icons.send_rounded, size: 20),
+                      const SizedBox(width: 8),
+                      Text(report.isSubmitting ? 'Mengirim...' : 'Kirim Laporan Segera'),
+                    ],
                   ),
                 );
               },
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 24),
           ],
         ),
       ),
@@ -348,37 +376,36 @@ class _ConfirmReportScreenState extends State<ConfirmReportScreen> {
   }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8),
-        ],
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.grey200),
       ),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, color: color, size: 20),
+            child: Icon(icon, color: color, size: 22),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(label,
                     style: const TextStyle(
-                        fontSize: 11, color: AppTheme.grey600)),
+                        fontSize: 12, color: AppTheme.grey600, fontWeight: FontWeight.w500)),
+                const SizedBox(height: 2),
                 if (value != null)
                   Text(
                     value,
                     style: const TextStyle(
-                        fontWeight: FontWeight.w600, fontSize: 14),
+                        fontWeight: FontWeight.bold, fontSize: 15, color: AppTheme.grey800),
                   ),
                 if (child != null) child,
               ],
